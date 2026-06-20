@@ -7,6 +7,24 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
+export const PROJECT_FEATURES = [
+  "Complete Source Code Setup",
+  "Documentation & Project Reports (IEEE format)",
+  "PPT & Presentation Guides",
+  "One-on-One Code Explanation",
+  "Database configuration included",
+  "Free minor modifications",
+];
+
+export const DOMAINS = [
+  "Web Development (React, Node, Python, PHP)",
+  "Machine Learning & AI",
+  "Internet of Things (IoT)",
+  "Mobile App Development",
+  "Blockchain & Web3",
+  "Data Science & Analytics",
+];
+
 export const SERVICES = [
   {
     id: 'custom-software',

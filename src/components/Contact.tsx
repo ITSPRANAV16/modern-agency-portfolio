@@ -1,14 +1,48 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Send, User, Briefcase, MessageSquare, X, Phone, Copy } from 'lucide-react';
+import { Mail, Send, User, Briefcase, MessageSquare, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Contact() {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success('Inquiry sent successfully! We will get back to you soon.');
-    // Reset form after showing toast
-    e.currentTarget.reset();
+    setIsSubmitting(true);
+    
+    try {
+      const formData = new FormData(e.currentTarget);
+      const data = Object.fromEntries(formData.entries());
+
+      // Sending email straight to the user's email via FormSubmit (No Keys Needed)
+      const response = await fetch("https://formsubmit.co/ajax/pranavsp2810@gmail.com", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          Name: data.user_name,
+          Email: data.user_email,
+          ProjectType: data.project_type || 'Not specified',
+          Message: data.message,
+          _subject: "New Inquiry from Delta Studio Profile!"
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Inquiry sent successfully! We will get back to you soon.');
+        if (formRef.current) formRef.current.reset();
+      } else {
+        toast.error('Failed to send inquiry. Please try again later.');
+      }
+    } catch (error) {
+      toast.error('Failed to send inquiry. Please check your internet connection.');
+      console.error('Submission Error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -33,51 +67,9 @@ export default function Contact() {
           <p className="text-slate-400 text-xs md:text-sm uppercase tracking-[0.2em] font-bold mb-8">
             Initiate your 3D collaboration
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/5">
-            <button 
-              type="button"
-              onClick={() => {
-                navigator.clipboard.writeText('pranavsp2810@gmail.com');
-                toast.success('Email copied to clipboard!');
-              }}
-              className="flex items-center justify-between w-full p-4 bg-[#121214] border border-white/5 rounded-2xl hover:bg-white/5 hover:border-blue-500/30 transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <div className="text-left">
-                  <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase mb-1">Email</p>
-                  <p className="text-sm font-medium text-white truncate max-w-[120px] sm:max-w-[150px]">pranavsp2810@gmail.com</p>
-                </div>
-              </div>
-              <Copy className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
-            </button>
-
-            <button 
-              type="button"
-              onClick={() => {
-                navigator.clipboard.writeText('+91 98765 43210');
-                toast.success('Phone copied to clipboard!');
-              }}
-              className="flex items-center justify-between w-full p-4 bg-[#121214] border border-white/5 rounded-2xl hover:bg-white/5 hover:border-blue-500/30 transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                  <Phone className="w-4 h-4" />
-                </div>
-                <div className="text-left">
-                  <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase mb-1">Phone</p>
-                  <p className="text-sm font-medium text-white">+91 98765 43210</p>
-                </div>
-              </div>
-              <Copy className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
-            </button>
-          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
           {/* Full Name */}
           <div>
             <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-3">
@@ -85,6 +77,7 @@ export default function Contact() {
             </label>
             <input 
               type="text" 
+              name="user_name"
               placeholder="Aditya Patil"
               required
               className="w-full px-5 py-4 bg-[#121214] border border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 text-white placeholder:text-slate-600 transition-all font-medium shadow-inner"
@@ -98,6 +91,7 @@ export default function Contact() {
             </label>
             <input 
               type="email" 
+              name="user_email"
               placeholder="aditya@example.com"
               required
               className="w-full px-5 py-4 bg-[#121214] border border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 text-white placeholder:text-slate-600 transition-all font-medium shadow-inner"
@@ -110,7 +104,7 @@ export default function Contact() {
               <Briefcase className="w-3.5 h-3.5" /> Project Type (Optional)
             </label>
             <div className="relative">
-              <select defaultValue="" className="w-full px-5 py-4 bg-[#121214] border border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 text-white transition-all font-medium appearance-none shadow-inner cursor-pointer">
+              <select name="project_type" defaultValue="" className="w-full px-5 py-4 bg-[#121214] border border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 text-white transition-all font-medium appearance-none shadow-inner cursor-pointer">
                 <option value="" disabled className="text-slate-600">Select services needed...</option>
                 <option value="custom">Custom Software</option>
                 <option value="web">Web Development</option>
@@ -130,6 +124,7 @@ export default function Contact() {
             </label>
             <textarea 
               rows={3}
+              name="message"
               placeholder="Briefly describe what you'd like to build together..."
               required
               className="w-full px-5 py-4 bg-[#121214] border border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 text-white placeholder:text-slate-600 transition-all font-medium resize-none shadow-inner"
@@ -138,7 +133,8 @@ export default function Contact() {
 
           <button 
             type="submit" 
-            className="w-full mt-10 relative overflow-hidden group px-8 py-5 rounded-[2rem] font-bold tracking-widest uppercase text-sm text-white flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] shadow-[0_0_40px_rgba(167,85,247,0.15)]"
+            disabled={isSubmitting}
+            className="w-full mt-10 relative overflow-hidden group px-8 py-5 rounded-[2rem] font-bold tracking-widest uppercase text-sm text-white flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_40px_rgba(167,85,247,0.15)] disabled:opacity-70 disabled:hover:scale-100"
           >
             {/* Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#031139] via-[#4338ca] to-[#e11d48] md:to-[#ea580c] z-0"></div>
@@ -146,7 +142,7 @@ export default function Contact() {
             <div className="absolute inset-0 rounded-[2rem] border-b-2 border-white/60 z-10 group-hover:border-white/90 transition-colors"></div>
             {/* Button text and Icon */}
             <span className="relative z-20 flex items-center gap-3 text-white drop-shadow-md">
-              Submit Inquiry <Send className="w-4 h-4" />
+              {isSubmitting ? 'Sending...' : 'Submit Inquiry'} {!isSubmitting && <Send className="w-4 h-4" />}
             </span>
           </button>
         </form>
